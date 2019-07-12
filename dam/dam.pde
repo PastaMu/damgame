@@ -6,14 +6,25 @@ int cnt=0;//落ちた水の数
 int n=1;//メーターで使ったよ
 int ls=15;//大きい水が出てくるタイム的な
 int wingLR; //風が左右どちらからくるかsetupで
-int n1 = 0,n2=0;
-int wx,wy,sx,sy;
+float woodx0=10 + 110/2; 
+float woody0=90 + 35/6;
+float wx, wy, sx, sy;
+int mn=20; //材料の個数
+int stonen=0;
+int woodn=0;
+int n1=0;
+int[] n2=new int[mn];
+float r; //一番右にある石のx座標
+float l; //一番左にある石のx座標
+float m; //石たちの真ん中
 
 class Water {
   int size=int(random(25, 35));
   float x;
   float y = random(-400, 20);
+  float stepX = 0;
   float stepY = random(2.0, 6.0);
+  float stepY2=stepY; //stepYを記憶してるだけ
 
   void display() {
     fill(0, 245, 255, 70);
@@ -21,7 +32,7 @@ class Water {
   }
 
   void flow() {
-    if (y<height) {
+    if (falled()==false) {
       y+=stepY;
     } else {
       y=0;
@@ -46,92 +57,47 @@ class LWater extends Water { //大きい水
 }
 
 class Material_Stone {//石のクラス
-  PImage img;
+  PImage img = loadImage("stone.png");
   int sizeX = 40;
   int sizeY = 30;
+  //stoneの真ん中
   float x = 10+sizeX/2;
   float y = 40+sizeY/2;
-  Material_Stone(PImage mat) {
-    img = mat;
-  }
 
   void display() {
-    image(img, x-sizeX/2, y-sizeY/2,sizeX,sizeY);
+    image(img, x-sizeX/2, y-sizeY/2, sizeX, sizeY);
   }
 }
 
 class Material_Wood extends Material_Stone {//木のクラス
+  PImage img = loadImage("wood.png");
   int sizeX = 110;
   int sizeY = 35;
-  float x = 10 + sizeX/2;
-  float y = 90 + sizeY/6;
-  Material_Wood(PImage mat) {
-    super(mat);
-  }
+  //wood の真ん中
+  float x = woodx0; 
+  float y = woody0;
 
   void display() {
     image(img, x-sizeX/2, y-sizeY/6, sizeX, sizeY);
   }
 }
 
-Material_Stone stones;
+Material_Stone[] stones;
 Material_Wood woods;
 
-PImage wood, stone;
 Water[] w1; 
 LWater w2;
 
-void fallingWater1(Water[] w) {
-  for (int i = 0; i < wn; i++) {
-    w[i].display();
-    w[i].flow();
-    if (s/60>=20&&25>=s/60) {
-      if (w[i].y>height/5&&w[i].y<height*3/5) {
-        wing(w[i]);
-      }
-    }
-    meter(w[i]);
-  }
-}
-
-void fallingWater2() {
-  if (s/60>ls) {
-      w2.display();
-      w2.flow();
-    }
-    if (w2.falled()==true&&s/60>0) {
-      w2.y=0;
-      ls+=ls;
-      n+=5; //落ちたら一気にメーターが増える
-    }
-}
-
-void meter(Water w) {
-  if (w.falled()==true) {
-    w.x=random(195, 305);
-    cnt+=1;
-  }
-}
-
-void wing(Water w) {
-  if (wingLR==1) {
-      w.x-=2;
-  } else {
-    w.x+=2;
-  }
-}
-
-
-
-
 void setup() {
   size(500, 800);
-  wood = loadImage("wood.png");
-  stone = loadImage("stone.png");
-  stones = new Material_Stone(stone);
-  woods = new Material_Wood(wood);
+  stones = new Material_Stone[mn];
+  woods = new Material_Wood();
   w1 = new Water[wn];
   w2 = new LWater(); 
+  for (int i = 0; i < mn; i++) {
+    stones[i]=new Material_Stone();
+    n2[i]=0;
+  }
   for (int i = 0; i < wn; i++) {
     w1[i]=new Water();
     w1[i].x=random(195, 305);
@@ -148,8 +114,93 @@ void back() {//背景
   textSize(20);
   text("time:"+s/60, 10, 20);
   noStroke();
-  stones.display();
+  for (int i = 0; i < mn; i++) {
+    stones[i].display();
+  }
   woods.display();
+}
+
+boolean isHit(float x, float sizeX, float y, float sizeY, Water water) {
+  if ((x-sizeX)<(water.x+water.size/2)&&water.x<(x+sizeX)&&(water.y+water.size)>=(y-sizeY)&&(water.y+water.size)>=(y-sizeY)) {
+    return true;
+  }
+  return false;
+}
+
+void doHit(float x, float sizeX, float y, float sizeY, Water water) {
+  if (isHit(x, sizeX, y, sizeY, water)==true) {
+    water.stepY=0;
+    if (m<(water.x+water.size/2)) {
+      if (water.x<r||water.x<(x+sizeX)) {
+        water.stepX=random(3,5);
+        if((water.x+water.size)>width&&water.y<y) {
+          water.stepX*=-1;
+        }
+        water.x += water.stepX;
+      }
+    } else {
+      if ((water.x+water.size/2)>l||(water.x+water.size/2)>(x-sizeX)) {
+        water.stepX=random(3,5);
+        if(water.x<0&&water.y<y) {
+          water.stepX*=-1;
+        }
+        water.x-=water.stepX;
+      }
+    }
+  } else {
+    water.stepX=0;
+    water.stepY=water.stepY2;
+  }
+}
+
+void fallingWater1(Water[] water) {
+  for (int i = 0; i < wn; i++) {
+    water[i].display();
+    water[i].flow();
+    doHit(woods.x, woods.sizeX/2, woods.y, woods.sizeY/5, water[i]);
+    for (int j = 0; j <= stonen; j++) {
+      doHit(stones[j].x-7, stones[j].sizeX/2+1.5, stones[j].y, stones[j].sizeY/2+5, water[i]);
+      for (int k = 0; k<=stonen; k++) {
+        if (isHit(stones[k].x-7, stones[k].sizeX/2+1.5, stones[k].y, stones[k].sizeY/2+5, water[i])==true) {
+          doHit(stones[k].x-7, stones[k].sizeX/2+1.5, stones[k].y, stones[k].sizeY/2+5, water[i]);
+        }
+      }
+    }
+
+    if (s/60>=20&&25>=s/60) {
+      if (water[i].y>height/5&&water[i].y<height*3/5) {
+        //wing(water[i]);
+      }
+    }
+    meter(water[i]);
+  }
+}
+
+void fallingWater2() {
+  if (s/60>ls) {
+    w2.display();
+    w2.flow();
+  }
+  if (w2.falled()==true&&s/60>0) {
+    w2.y=0;
+    ls+=ls;
+    n+=5; //落ちたら一気にメーターが増える
+  }
+}
+
+void meter(Water w) {
+  if (w.falled()==true) {
+    w.x=random(195, 305);
+    cnt+=1;
+  }
+}
+
+void wing(Water w) {
+  if (wingLR==1) {
+    w.x-=2;
+  } else {
+    w.x+=2;
+  }
 }
 
 void draw() {
@@ -160,7 +211,7 @@ void draw() {
   } else {
     fallingWater1(w1);
     fallingWater2();
-    if (cnt>wn) { //水が150個落ちたらメーターが増える
+    if (cnt>150) { //水が150個落ちたらメーターが増える
       rectD=n;
       rectY=height-n;
       n+=1;
@@ -173,11 +224,10 @@ void draw() {
     s++;
   }
   put();
-  s++;
 }
 
 void put() {
-  if (operationObject(woods.x, woods.y, woods.sizeX/2, woods.sizeY/6) == true&&n2==0) {
+  if (operationObject(woods.x, woods.y, woods.sizeX/2, woods.sizeY/6) == true&&n2[stonen]==0) {
     n1=1;
   }
   if (n1==1) {
@@ -194,21 +244,34 @@ void put() {
       }
     }
   }
-  
-  if (operationObject(stones.x, stones.y, stones.sizeX/2, stones.sizeY/2) == true&&n1==0) {
-    n2=1;
+
+  if (operationObject(stones[stonen].x, stones[stonen].y, stones[stonen].sizeX/2, stones[stonen].sizeY/2) == true&&n1==0) {
+    n2[stonen]=1;
   }
-  if (n2==1) {
+  if (n2[stonen]==1) {
     if (key==' ') {
       if ((keyPressed == true)) {
-        stones.x = mouseX;
-        stones.y = mouseY;
+        stones[stonen].x = mouseX;
+        stones[stonen].y = mouseY;
         sx=mouseX;
         sy=mouseY;
       } else {
-        stones.x=sx;
-        stones.y=sy;
-        n2=0;
+        stones[stonen].x=sx;
+        stones[stonen].y=sy;
+        if (stonen==0) {
+          r=stones[0].x+stones[0].sizeX/2;
+          l=stones[0].x-stones[0].sizeX/2;
+        } else {
+          if (r<(stones[stonen].x+stones[stonen].sizeX/2)) {
+            r=stones[stonen].x+stones[stonen].sizeX/2;
+          }
+          if (l>(stones[stonen].x-stones[stonen].sizeX/2)) {
+            l=stones[stonen].x-stones[stonen].sizeX/2;
+          }
+        }
+        m=(r+l)/2;
+        n2[stonen]=0;
+        stonen++;
       }
     }
   }
