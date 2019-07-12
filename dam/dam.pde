@@ -74,8 +74,52 @@ class Material_Wood extends Material_Stone {//木のクラス
   }
 }
 
+//クリアしたらクリア画面を表示するクラス
+class ClearDis{
+  int[] score = new int[10];
+  int highScore = 700;
+  int max = 10;
+  boolean flag = false;
+  
+  void makeScore(int time){
+    if(highScore > time){
+      highScore = (time/60);
+    }
+  }
+  
+  void resultDisplay(int time){
+    textSize(20);
+    fill(0);
+    text("クリアタイム:"+ (time/60), width/2, height/2);
+    text("本日のハイスコア:"+ highScore, width/2, height/2+30);
+  }
+}
+  
+
+//タイトル画面
+class Title{
+  int x = 0;
+  int y = 0;
+  int xSize = 500;
+  int ySize = 800;
+  int diff = 100;//中央にするための差（気にしなくてok）
+  PImage img = loadImage("title.png");
+  boolean pushSpace = true;
+  
+  void display(){
+    image(img,x,y,xSize,ySize);
+    textSize(30);
+    fill(0);
+    text("Push [space] key", xSize/2-diff, ySize/2);
+  }
+}
+
+
+
 Material_Stone stones;
 Material_Wood woods;
+Title startImg; //タイトル画面
+ClearDis endImg; //クリア後の画面
 
 PImage wood, stone;
 Water[] w1; 
@@ -85,7 +129,7 @@ void fallingWater1(Water[] w) {
   for (int i = 0; i < wn; i++) {
     w[i].display();
     w[i].flow();
-    if (s/60>=20&&25>=s/60) {
+    if (s/60>=20&&25>=s/60) { //風が起こる条件
       if (w[i].y>height/5&&w[i].y<height*3/5) {
         wing(w[i]);
       }
@@ -130,6 +174,8 @@ void setup() {
   stone = loadImage("stone.png");
   stones = new Material_Stone(stone);
   woods = new Material_Wood(wood);
+  startImg = new Title();
+  endImg = new ClearDis();
   w1 = new Water[wn];
   w2 = new LWater(); 
   for (int i = 0; i < wn; i++) {
@@ -153,27 +199,42 @@ void back() {//背景
 }
 
 void draw() {
-  back();
-  if (rectY==700) {
-    fill(0);
-    text("game over", width/2, height/2);
-  } else {
-    fallingWater1(w1);
-    fallingWater2();
-    if (cnt>wn) { //水が150個落ちたらメーターが増える
-      rectD=n;
-      rectY=height-n;
-      n+=1;
-      cnt=0;
+  if(startImg.pushSpace == true){
+    startImg.display();
+    if((keyPressed == true) && (key == ' ')){
+      startImg.pushSpace = false;
     }
-    //メーター
-    fill(0, 245, 255, 70);
-    rect(0, rectY, width, rectD);
-    //時間
-    s++;
-  }
+  }else{
+    back();
+    for(int i = 1; i < wn; i++){
+      if(clearCondition(w1[i],w1[i-1]) == true){ //クリア条件を満たしたら
+        endImg.flag = true; //クリア時のフラグをかえる
+        endImg.makeScore(s); //ハイスコアを生成
+      }
+    }
+    if(endImg.flag == true){
+      endImg.resultDisplay(s/60); //クリア画面を表示
+    }
+    if (rectY==700) {
+      fill(0);
+      text("game over", width/2, height/2);
+    } else {
+      fallingWater1(w1);
+      fallingWater2();
+      if (cnt>wn) { //水が150個落ちたらメーターが増える
+        rectD=n;
+        rectY=height-n;
+        n+=1;
+        cnt=0;
+      }
+      //メーター
+      fill(0, 245, 255, 70);
+      rect(0, rectY, width, rectD);
+      //時間
+      s++;
+    }
   put();
-  s++;
+  }
 }
 
 void put() {
@@ -214,7 +275,7 @@ void put() {
   }
 }
 
-boolean operationObject(float x, float y, int sizeX, int sizeY) {
+boolean operationObject(float x, float y, int sizeX, int sizeY) { //ドラッグするための条件
   if ((judge(x, y, sizeX, sizeY) == true) ) {
     if ((keyPressed == true) && (key == ' ')) {
       return true;
@@ -227,6 +288,22 @@ boolean judge(float x, float y, int sizeX, int sizeY) {
   if (mouseY <= (y+sizeY) && (y - sizeY) <= mouseY && mouseX >= (x-sizeX) && (x + sizeX) >= mouseX) {
     return true;
   } else {
+    return false;
+  }
+}
+
+boolean clearCondition(Water w, Water pw){ //pwはwの一つ前の水
+  int clearCnt = 0; //水が何個か地面に触れていなければクリア
+  if( (s/60) > 15){
+    if(w.falled() == false && pw.falled() == false){ //ある時間で水と一個前の水が地面に落ちていなければ
+      clearCnt++;
+    }
+    if(clearCnt > wn){ //水が全部落ちてなければゲームクリア
+      return  true;
+    }else{
+      return false;
+    }
+  }else{
     return false;
   }
 }
