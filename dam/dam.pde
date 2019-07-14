@@ -17,6 +17,8 @@ int[] n2=new int[mn];
 float r; //一番右にある石のx座標
 float l; //一番左にある石のx座標
 float m; //石たちの真ん中
+float u; 
+int on = 0;
 
 class Water {
   int size=int(random(25, 35));
@@ -45,6 +47,24 @@ class Water {
     } else {
       return false;
     }
+  }
+}
+
+class Water2 extends Water {
+  float stepX=random(1, 5);
+  void display() {
+    fill(0, 0, 255, 70);
+    rect(x, y, size, size);
+  }
+  void flow() {
+    if (falled()==false) {
+      if (x<width/2) {
+        x+=stepX;
+      } else {
+        x-=stepX;
+      }
+      y+=stepY;
+    } 
   }
 }
 
@@ -83,29 +103,29 @@ class Material_Wood extends Material_Stone {//木のクラス
 }
 
 //クリアしたらクリア画面を表示するクラス
-class ClearDis{
+class ClearDis {
   int[] score = new int[10];
   int highScore = 700;
   int max = 10;
   boolean flag = false;
-  
-  void makeScore(int time){
-    if(highScore > time){
+
+  void makeScore(int time) {
+    if (highScore > time) {
       highScore = (time/60);
     }
   }
-  
-  void resultDisplay(int time){
+
+  void resultDisplay(int time) {
     textSize(20);
     fill(0);
     text("クリアタイム:"+ (time/60), width/2, height/2);
     text("本日のハイスコア:"+ highScore, width/2, height/2+30);
   }
 }
-  
+
 
 //タイトル画面
-class Title{
+class Title {
   int x = 0;
   int y = 0;
   int xSize = 500;
@@ -113,9 +133,9 @@ class Title{
   int diff = 100;//中央にするための差（気にしなくてok）
   PImage img = loadImage("title.png");
   boolean pushSpace = true;
-  
-  void display(){
-    image(img,x,y,xSize,ySize);
+
+  void display() {
+    image(img, x, y, xSize, ySize);
     textSize(30);
     fill(0);
     text("Push [space] key", xSize/2-diff, ySize/2);
@@ -130,6 +150,7 @@ ClearDis endImg; //クリア後の画面
 
 Water[] w1; 
 LWater w2;
+Water2[] w3,w4;
 
 void setup() {
   size(500, 800);
@@ -139,6 +160,8 @@ void setup() {
   endImg = new ClearDis();
   w1 = new Water[wn];
   w2 = new LWater(); 
+  w3 = new Water2[wn];
+  w4 = new Water2[wn];
   for (int i = 0; i < mn; i++) {
     stones[i]=new Material_Stone();
     n2[i]=0;
@@ -146,6 +169,16 @@ void setup() {
   for (int i = 0; i < wn; i++) {
     w1[i]=new Water();
     w1[i].x=random(195, 305);
+    w3[i]=new Water2();
+    w4[i]=new Water2();
+    w4[i].y=random(150,200);
+    if (i < wn/2) {
+      w3[i].x=random(-50,5);
+      w4[i].x=random(-50,5);
+    } else {
+      w3[i].x=random(width-5,width+50);
+      w4[i].x=random(width-5,width+50);
+    }
   }
   w2.x=random(200, 300);
   wingLR=int(random(1, 3));
@@ -165,6 +198,10 @@ void back() {//背景
   woods.display();
 }
 
+void roller() {
+  woods.x+=4;
+}
+
 boolean isHit(float x, float sizeX, float y, float sizeY, Water water) {
   if ((x-sizeX)<(water.x+water.size/2)&&water.x<(x+sizeX)&&(water.y+water.size)>=(y-sizeY)&&(water.y+water.size)>=(y-sizeY)) {
     return true;
@@ -172,54 +209,55 @@ boolean isHit(float x, float sizeX, float y, float sizeY, Water water) {
   return false;
 }
 
-void doHit(float x, float sizeX, float y, float sizeY, Water water) {
+void doHit(float x, float sizeX, float y, float sizeY, Water water, int a) {
   if (isHit(x, sizeX, y, sizeY, water)==true) {
+    if(a==1) {
+    water.stepX=random(3, 5);
     water.stepY=0;
+    
     if (m<(water.x+water.size/2)) {
       if (water.x<r||water.x<(x+sizeX)) {
-        water.stepX=random(3,5);
-        if((water.x+water.size)>width&&water.y<y) {
+        if ((water.x+water.size)>width&&water.y<y) {
           water.stepX*=-1;
         }
         water.x += water.stepX;
       }
     } else {
       if ((water.x+water.size/2)>l||(water.x+water.size/2)>(x-sizeX)) {
-        water.stepX=random(3,5);
-        if(water.x<0&&water.y<y) {
+        if (water.x<0&&water.y<y) {
           water.stepX*=-1;
         }
-        water.x-=water.stepX;
+        water.x -= water.stepX;
       }
     }
+    }
   } else {
-    water.stepX=0;
+    if(a==1) {
+      water.stepX=0;
+    }
     water.stepY=water.stepY2;
   }
 }
 
-void fallingWater1(Water[] water) {
+void fallingWater1(Water[] water, int a) {
   for (int i = 0; i < wn; i++) {
     water[i].display();
     water[i].flow();
-    doHit(woods.x, woods.sizeX/2, woods.y, woods.sizeY/5, water[i]);
-    for (int j = 0; j <= stonen; j++) {
-      doHit(stones[j].x-7, stones[j].sizeX/2+1.5, stones[j].y, stones[j].sizeY/2+5, water[i]);
-      for (int k = 0; k<=stonen; k++) {
+    //doHit(woods.x, woods.sizeX/2, woods.y, woods.sizeY/5, water[i]);
+    for (int j = 0; j < stonen; j++) {
+      //if (isHit(stones[j].x-7, stones[j].sizeX/2+1.5, stones[j].y, stones[j].sizeY/2+5, water[i])==true) {
+      doHit(stones[j].x-7, stones[j].sizeX/2+1.5, stones[j].y, stones[j].sizeY/2+5, water[i],a);
+      for (int k = 1; k<stonen; k++) {
+
         if (isHit(stones[k].x-7, stones[k].sizeX/2+1.5, stones[k].y, stones[k].sizeY/2+5, water[i])==true) {
-          doHit(stones[k].x-7, stones[k].sizeX/2+1.5, stones[k].y, stones[k].sizeY/2+5, water[i]);
+          doHit(stones[k].x-7, stones[k].sizeX/2+1.5, stones[k].y, stones[k].sizeY/2+5, water[i],a);
         }
       }
     }
-
-    if (s/60>=20&&25>=s/60) {
-      if (water[i].y>height/5&&water[i].y<height*3/5) {
-        //wing(water[i]);
-      }
-    }
-    meter(water[i]);
+    meter(water[i], a, i);
   }
 }
+
 
 void fallingWater2() {
   if (s/60>ls) {
@@ -233,44 +271,63 @@ void fallingWater2() {
   }
 }
 
-void meter(Water w) {
+void meter(Water w, int a, int i) {
   if (w.falled()==true) {
-    w.x=random(195, 305);
+    if (a==1) {
+      w.x=random(195, 305);
+    } else{
+      if (i < wn/2) {
+        w.x=0;
+      } else {
+        w.x=width;
+      }
+    }
+    if(a==2) {
+      w.y=u;
+    }else if(a==3){
+      w.y=150;
+    }
     cnt+=1;
   }
 }
 
-void wing(Water w) {
-  if (wingLR==1) {
-    w.x-=2;
-  } else {
-    w.x+=2;
-  }
-}
-
 void draw() {
-  if(startImg.pushSpace == true){
+  if (startImg.pushSpace == true) {
     startImg.display();
-    if((keyPressed == true) && (key == ' ')){
+    if ((keyPressed == true) && (key == ' ')) {
       startImg.pushSpace = false;
     }
-  }else{
+  } else {
     back();
-    for(int i = 1; i < wn; i++){
-      if(clearCondition(w1[i],w1[i-1]) == true){ //クリア条件を満たしたら
-        endImg.flag = true; //クリア時のフラグをかえる
-        endImg.makeScore(s); //ハイスコアを生成
-      }
+    //for(int i = 1; i < wn; i++){
+    if (clearCondition() == true) { //クリア条件を満たしたら
+      endImg.flag = true; //クリア時のフラグをかえる
+      endImg.makeScore(s); //ハイスコアを生成
     }
-    if(endImg.flag == true){
+    //}
+    if (endImg.flag == true) {
       endImg.resultDisplay(s/60); //クリア画面を表示
     }
     if (rectY==700) {
       fill(0);
       text("game over", width/2, height/2);
     } else {
-      fallingWater1(w1);
+      fallingWater1(w1, 1);
+      if (s/60>15) {
+        fallingWater1(w4, 3);
+      }
+      if(s/60>30) {
+        fallingWater1(w3,2);
+        on=1;
+      }
       fallingWater2();
+      if(s/60==40) {
+        woods.x=0;
+        woods.y=stones[0].y;
+      }
+      if(s/60>40) {
+        roller();
+      }
       if (cnt>wn) { //水が150個落ちたらメーターが増える
         rectD=n;
         rectY=height-n;
@@ -322,6 +379,7 @@ void put() {
         if (stonen==0) {
           r=stones[0].x+stones[0].sizeX/2;
           l=stones[0].x-stones[0].sizeX/2;
+          u=stones[0].y+stones[0].sizeY/2;
         } else {
           if (r<(stones[stonen].x+stones[stonen].sizeX/2)) {
             r=stones[stonen].x+stones[stonen].sizeX/2;
@@ -329,8 +387,16 @@ void put() {
           if (l>(stones[stonen].x-stones[stonen].sizeX/2)) {
             l=stones[stonen].x-stones[stonen].sizeX/2;
           }
+          if (on==0) {
+            if (u < (stones[stonen].y+stones[stonen].sizeY/2)) {
+              u=stones[stonen].y+stones[stonen].sizeY/2;
+            }
+            for (int i = 0; i < wn; i++) {
+              w3[i].y=u+50;
+            }
+          }
+          m=(r+l)/2;
         }
-        m=(r+l)/2;
         n2[stonen]=0;
         stonen++;
       }
@@ -355,18 +421,18 @@ boolean judge(float x, float y, int sizeX, int sizeY) {
   }
 }
 
-boolean clearCondition(Water w, Water pw){ //pwはwの一つ前の水
-  int clearCnt = 0; //水が何個か地面に触れていなければクリア
-  if( (s/60) > 15){
-    if(w.falled() == false && pw.falled() == false){ //ある時間で水と一個前の水が地面に落ちていなければ
-      clearCnt++;
-    }
-    if(clearCnt > wn){ //水が全部落ちてなければゲームクリア
+boolean clearCondition() { //pwはwの一つ前の水
+  if ( (s/60) > 15) {
+    if ((r-l) > (width-25/2) && stonen > 14) {
+      //if(w.falled() == false){ //ある時間で水と一個前の水が地面に落ちていなければ
+      //clearCnt++;
+      //}
+      //if(clearCnt == wn){ //水が全部落ちてなければゲームクリア
       return  true;
-    }else{
+    } else {
       return false;
     }
-  }else{
+  } else {
     return false;
   }
 }
