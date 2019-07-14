@@ -51,18 +51,17 @@ class Water {
 }
 
 class Water2 extends Water {
-  float stepX=random(1, 5);
-  void display() {
-    fill(0, 0, 255, 70);
-    rect(x, y, size, size);
+  float stepY = random(4.0, 7.0);
+  void set(float x) {
+    stepX=random(1, 3);
+    if(x>width/2) {
+      stepX*=-1;
+    }
   }
+   
   void flow() {
     if (falled()==false) {
-      if (x<width/2) {
-        x+=stepX;
-      } else {
-        x-=stepX;
-      }
+      x+=stepX;
       y+=stepY;
     } 
   }
@@ -171,7 +170,7 @@ void setup() {
     w1[i].x=random(195, 305);
     w3[i]=new Water2();
     w4[i]=new Water2();
-    w4[i].y=random(150,200);
+    w4[i].y=random(100,200);
     if (i < wn/2) {
       w3[i].x=random(-50,5);
       w4[i].x=random(-50,5);
@@ -179,6 +178,8 @@ void setup() {
       w3[i].x=random(width-5,width+50);
       w4[i].x=random(width-5,width+50);
     }
+    w3[i].set(w3[i].x);
+    w4[i].set(w4[i].x);
   }
   w2.x=random(200, 300);
   wingLR=int(random(1, 3));
@@ -211,10 +212,9 @@ boolean isHit(float x, float sizeX, float y, float sizeY, Water water) {
 
 void doHit(float x, float sizeX, float y, float sizeY, Water water, int a) {
   if (isHit(x, sizeX, y, sizeY, water)==true) {
-    if(a==1) {
-    water.stepX=random(3, 5);
     water.stepY=0;
-    
+    if(a==1) {
+      water.stepX=random(3, 5);
     if (m<(water.x+water.size/2)) {
       if (water.x<r||water.x<(x+sizeX)) {
         if ((water.x+water.size)>width&&water.y<y) {
@@ -283,9 +283,9 @@ void meter(Water w, int a, int i) {
       }
     }
     if(a==2) {
-      w.y=u;
+      w.y=random(u,u+50);
     }else if(a==3){
-      w.y=150;
+      w.y=random(100,250);
     }
     cnt+=1;
   }
@@ -299,12 +299,10 @@ void draw() {
     }
   } else {
     back();
-    //for(int i = 1; i < wn; i++){
     if (clearCondition() == true) { //クリア条件を満たしたら
       endImg.flag = true; //クリア時のフラグをかえる
       endImg.makeScore(s); //ハイスコアを生成
     }
-    //}
     if (endImg.flag == true) {
       endImg.resultDisplay(s/60); //クリア画面を表示
     }
@@ -328,7 +326,7 @@ void draw() {
       if(s/60>40) {
         roller();
       }
-      if (cnt>wn) { //水が150個落ちたらメーターが増える
+      if (cnt>wn/3) { //水が200個落ちたらメーターが増える
         rectD=n;
         rectY=height-n;
         n+=1;
@@ -424,10 +422,6 @@ boolean judge(float x, float y, int sizeX, int sizeY) {
 boolean clearCondition() { //pwはwの一つ前の水
   if ( (s/60) > 15) {
     if ((r-l) > (width-25/2) && stonen > 14) {
-      //if(w.falled() == false){ //ある時間で水と一個前の水が地面に落ちていなければ
-      //clearCnt++;
-      //}
-      //if(clearCnt == wn){ //水が全部落ちてなければゲームクリア
       return  true;
     } else {
       return false;
