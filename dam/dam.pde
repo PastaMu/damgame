@@ -17,6 +17,7 @@ int[] n2=new int[mn];
 float r; //一番右にある石のx座標
 float l; //一番左にある石のx座標
 float m; //石たちの真ん中
+PFont font;
 
 class Water {
   int size=int(random(25, 35));
@@ -102,6 +103,18 @@ class ClearDis{
     text("本日のハイスコア:"+ highScore, width/2, height/2+30);
   }
 }
+
+class Beaver{ //ビーバークラス
+  PImage img = loadImage("Beaver.png");
+  float x,y;
+  int Size = 50;
+  
+  void display(float x1, float y1){
+    x = (x1 - Size/4);
+    y = (y1 - Size/4);
+    image(img,x,y,Size,Size);
+  }
+}
   
 
 //タイトル画面
@@ -111,13 +124,16 @@ class Title{
   int xSize = 500;
   int ySize = 800;
   int diff = 100;//中央にするための差（気にしなくてok）
-  PImage img = loadImage("title.png");
+  PImage img = loadImage("title.jpeg");
   boolean pushSpace = true;
   
   void display(){
     image(img,x,y,xSize,ySize);
-    textSize(30);
+    textSize(25);
     fill(0);
+    text("・操作説明", xSize/2-(diff*2), ySize/2-(diff*2));
+    text("・マウス--ビーバーの移動", xSize/2-(diff*2), ySize/2-(diff*1.5));
+    text("・Space長押し--オブジェクトの選択",xSize/2-(diff*2), ySize/2-diff);
     text("Push [space] key", xSize/2-diff, ySize/2);
   }
 }
@@ -127,14 +143,18 @@ Material_Stone[] stones;
 Material_Wood woods;
 Title startImg; //タイトル画面
 ClearDis endImg; //クリア後の画面
+Beaver beaver; //ビーバー
 
 Water[] w1; 
 LWater w2;
 
 void setup() {
   size(500, 800);
+  font = createFont("MS Gothic", 24, true);
+  textFont(font);
   stones = new Material_Stone[mn];
   woods = new Material_Wood();
+  beaver = new Beaver();
   startImg = new Title();
   endImg = new ClearDis();
   w1 = new Water[wn];
@@ -163,6 +183,7 @@ void back() {//背景
     stones[i].display();
   }
   woods.display();
+  beaver.display(mouseX, mouseY);
 }
 
 boolean isHit(float x, float sizeX, float y, float sizeY, Water water) {
