@@ -325,11 +325,10 @@ void draw() {
     }
     if (endImg.flag == true) {
       endImg.resultDisplay(s/60); //クリア画面を表示
-    }
-    if (rectY==700) {
+    }else if (rectY==700 && endImg.flag == false) {
       fill(0);
       text("game over", width/2, height/2);
-    } else {
+    } else if(endImg.flag == false) {
       fallingWater1(w1, 1);
       if (s/60>15) {
         fallingWater1(w4, 3);
