@@ -5,11 +5,8 @@ int rectD=0;//メーター
 int cnt=0;//落ちた水の数
 int n=1;//メーターで使ったよ
 int ls=15;//大きい水が出てくるタイム的な
-int wingLR; //風が左右どちらからくるかsetupで
-float woodx0=10 + 110/2; 
-float woody0=90 + 35/6;
 float wx, wy, sx, sy;
-int mn=20; //材料の個数
+int mn=40; //材料の個数
 int stonen=0;
 int woodn=0;
 int n1=0;
@@ -20,12 +17,14 @@ float m; //石たちの真ん中
 PFont font;
 float u; 
 int on = 0;
+int stoneCnt=0; //置いてある石の数
 
 class Water {
   int size=int(random(25, 35));
   float x;
   float y = random(-400, 20);
   float stepX = 0;
+  float stepX2=stepX;
   float stepY = random(2.0, 6.0);
   float stepY2=stepY; //stepYを記憶してるだけ
 
@@ -52,19 +51,20 @@ class Water {
 }
 
 class Water2 extends Water {
+  float stepX=random(1, 3);
+  float stepX2=stepX;
   float stepY = random(4.0, 7.0);
   void set(float x) {
-    stepX=random(1, 3);
-    if(x>width/2) {
+    if (x>width/2) {
       stepX*=-1;
     }
   }
-   
+
   void flow() {
     if (falled()==false) {
       x+=stepX;
       y+=stepY;
-    } 
+    }
   }
 }
 
@@ -94,8 +94,8 @@ class Material_Wood extends Material_Stone {//木のクラス
   int sizeX = 110;
   int sizeY = 35;
   //wood の真ん中
-  float x = woodx0; 
-  float y = woody0;
+  float x = 10 + 110/2; 
+  float y = 90 + 35/6;
 
   void display() {
     image(img, x-sizeX/2, y-sizeY/6, sizeX, sizeY);
@@ -123,15 +123,15 @@ class ClearDis {
   }
 }
 
-class Beaver{ //ビーバークラス
+class Beaver { //ビーバークラス
   PImage img = loadImage("Beaver.png");
-  float x,y;
-  int Size = 60;
-  
-  void display(float x1, float y1){
+  float x, y;
+  int Size = 70;
+
+  void display(float x1, float y1) {
     x = (x1 - Size/4);
     y = (y1 - Size/4);
-    image(img,x,y,Size,Size);
+    image(img, x, y, Size, Size);
   }
 }
 
@@ -144,14 +144,14 @@ class Title {
   int diff = 100;//中央にするための差（気にしなくてok）
   PImage img = loadImage("title.jpeg");
   boolean pushSpace = true;
-  
+
   void display() {
     image(img, x, y, xSize, ySize);
     textSize(25);
     fill(0);
     text("・操作説明", xSize/2-(diff*2), ySize/2-(diff*2));
     text("・マウス--ビーバーの移動", xSize/2-(diff*2), ySize/2-(diff*1.5));
-    text("・Space長押し--オブジェクトの選択",xSize/2-(diff*2), ySize/2-diff);
+    text("・Space長押し--オブジェクトの選択", xSize/2-(diff*2), ySize/2-diff);
     text("Push [space] key", xSize/2-diff, ySize/2);
   }
 }
@@ -163,9 +163,9 @@ Title startImg; //タイトル画面
 ClearDis endImg; //クリア後の画面
 Beaver beaver; //ビーバー
 
-Water[] w1; 
-LWater w2;
-Water2[] w3,w4;
+Water[] w1; //上から出てくる水
+LWater w2; //大きい水
+Water2[] w3, w4; //横から出てくる水
 
 void setup() {
   size(500, 800);
@@ -189,19 +189,18 @@ void setup() {
     w1[i].x=random(195, 305);
     w3[i]=new Water2();
     w4[i]=new Water2();
-    w4[i].y=random(100,200);
+    w4[i].y=random(100, 200);
     if (i < wn/2) {
-      w3[i].x=random(-50,5);
-      w4[i].x=random(-50,5);
+      w3[i].x=random(-50, 0);
+      w4[i].x=random(-50, 0);
     } else {
-      w3[i].x=random(width-5,width+50);
-      w4[i].x=random(width-5,width+50);
+      w3[i].x=random(width, width+50);
+      w4[i].x=random(width, width+50);
     }
     w3[i].set(w3[i].x);
     w4[i].set(w4[i].x);
   }
   w2.x=random(200, 300);
-  wingLR=int(random(1, 3));
 }
 
 void back() {//背景
@@ -220,41 +219,44 @@ void back() {//背景
 }
 
 void roller() {
-  woods.x+=4;
+  if(woods.x>width) {
+    for(int i = 0; i < mn; i++) {
+      if(stones[stonen].x-stones[stonen].sizeX/2==woods.x+woods.sizeX/2&&stones[stonen].y-stones[stonen].sizeY>=woods.y+woods.sizeY/2) { 
+        stones[stonen].x=stones[stonen].sizeX/2+woods.x+woods.sizeX/2;
+      }
+    }
+    woods.x+=4;
+  }
 }
 
 boolean isHit(float x, float sizeX, float y, float sizeY, Water water) {
-  if ((x-sizeX)<(water.x+water.size/2)&&water.x<(x+sizeX)&&(water.y+water.size)>=(y-sizeY)&&(water.y+water.size)>=(y-sizeY)) {
+  if ((x-sizeX)<(water.x+water.size/2)&&water.x<(x+sizeX)&&(water.y+water.size)>=(y-sizeY)&&(water.y+water.size)<(y+sizeY)) {
     return true;
   }
   return false;
 }
 
-void doHit(float x, float sizeX, float y, float sizeY, Water water, int a) {
+void doHit(float x, float sizeX, float y, float sizeY, Water water, int a, int i) {
   if (isHit(x, sizeX, y, sizeY, water)==true) {
-    water.stepY=0;
-    if(a==1) {
+      water.stepY=0;
       water.stepX=random(3, 5);
-    if (m<(water.x+water.size/2)) {
-      if (water.x<r||water.x<(x+sizeX)) {
-        if ((water.x+water.size)>width&&water.y<y) {
-          water.stepX*=-1;
+      if (a==1&&m<(water.x+water.size/2)||a!=1&&i<wn/2) {
+        if (water.x<r||water.x<(x+sizeX)||a!=1&&(water.x+water.size)>=stones[stonen].x-stones[stonen].sizeX/2) {
+          if ((water.x+water.size)>width&&water.y<y) {
+            water.stepX*=-1;
+          }
+          water.x += water.stepX;
         }
-        water.x += water.stepX;
-      }
-    } else {
-      if ((water.x+water.size/2)>l||(water.x+water.size/2)>(x-sizeX)) {
-        if (water.x<0&&water.y<y) {
-          water.stepX*=-1;
+      } else if(a==1&&m>=(water.x+water.size/2)||a!=1&&i>=wn/2){
+        if ((water.x+water.size/2)>l||(water.x+water.size/2)>(x-sizeX)||a!=1&&water.x>=stones[stonen].x+stones[stonen].sizeX/2) {
+          if (water.x<0&&water.y<y) {
+            water.stepX*=-1;
+          }
+          water.x -= water.stepX;
         }
-        water.x -= water.stepX;
       }
-    }
-    }
-  } else {
-    if(a==1) {
-      water.stepX=0;
-    }
+  } else{
+    water.stepX=water.stepX2;
     water.stepY=water.stepY2;
   }
 }
@@ -263,15 +265,14 @@ void fallingWater1(Water[] water, int a) {
   for (int i = 0; i < wn; i++) {
     water[i].display();
     water[i].flow();
-    //doHit(woods.x, woods.sizeX/2, woods.y, woods.sizeY/5, water[i]);
+    
     for (int j = 0; j < stonen; j++) {
       //if (isHit(stones[j].x-7, stones[j].sizeX/2+1.5, stones[j].y, stones[j].sizeY/2+5, water[i])==true) {
-      doHit(stones[j].x-7, stones[j].sizeX/2+1.5, stones[j].y, stones[j].sizeY/2+5, water[i],a);
+      doHit(stones[j].x-7, stones[j].sizeX/2+1.5, stones[j].y, stones[j].sizeY/2+5, water[i], a, i);
       for (int k = 1; k<stonen; k++) {
-
-        if (isHit(stones[k].x-7, stones[k].sizeX/2+1.5, stones[k].y, stones[k].sizeY/2+5, water[i])==true) {
-          doHit(stones[k].x-7, stones[k].sizeX/2+1.5, stones[k].y, stones[k].sizeY/2+5, water[i],a);
-        }
+        //if (isHit(stones[k].x-7, stones[k].sizeX/2+1.5, stones[k].y, stones[k].sizeY/2+5, water[i])==true) {
+        doHit(stones[k].x-7, stones[k].sizeX/2+1.5, stones[k].y, stones[k].sizeY/2+5, water[i], a, i);
+        //}
       }
     }
     meter(water[i], a, i);
@@ -279,12 +280,26 @@ void fallingWater1(Water[] water, int a) {
 }
 
 
-void fallingWater2() {
+void fallingWater2() { //大きい水の処理
   if (s/60>ls) {
     w2.display();
     w2.flow();
   }
+  if(isHit(woods.x,woods.sizeX/2,woods.y,woods.sizeY/2,w2)==true) {
+    w2.y=0;
+    ls+=ls;
+  }
+  println(stoneCnt);
+  for(int i = 0; i < stonen; i++) {
+    if (isHit(stones[i].x-7, stones[i].sizeX/2+1.5, stones[i].y, stones[i].sizeY/2+5, w2)==true){
+      stones[i].y=w2.y+w2.size;
+      if(w2.falled()==true&&s/60>0) {
+        stoneCnt--;
+      }
+    }
+  }
   if (w2.falled()==true&&s/60>0) {
+    w2.x=random(250,350);
     w2.y=0;
     ls+=ls;
     n+=5; //落ちたら一気にメーターが増える
@@ -295,17 +310,17 @@ void meter(Water w, int a, int i) {
   if (w.falled()==true) {
     if (a==1) {
       w.x=random(195, 305);
-    } else{
+    } else {
       if (i < wn/2) {
         w.x=0;
       } else {
         w.x=width;
       }
     }
-    if(a==2) {
-      w.y=random(u,u+50);
-    }else if(a==3){
-      w.y=random(100,250);
+    if (a==2) {
+      w.y=random(u, u+50);
+    } else if (a==3) {
+      w.y=random(100, 250);
     }
     cnt+=1;
   }
@@ -332,18 +347,18 @@ void draw() {
     } else {
       fallingWater1(w1, 1);
       if (s/60>15) {
-        fallingWater1(w4, 3);
+        //fallingWater1(w4, 3);
       }
-      if(s/60>30) {
-        fallingWater1(w3,2);
+      if (s/60>30) {
+        fallingWater1(w3, 2);
         on=1;
       }
       fallingWater2();
-      if(s/60==40) {
+      if (s/60==40) {
         woods.x=0;
         woods.y=stones[0].y;
       }
-      if(s/60>40) {
+      if (s/60>40) {
         roller();
       }
       if (cnt>wn/2) { //水が200個落ちたらメーターが増える
@@ -410,13 +425,18 @@ void put() {
               u=stones[stonen].y+stones[stonen].sizeY/2;
             }
             for (int i = 0; i < wn; i++) {
-              w3[i].y=u+50;
+              w3[i].y=u+40;
             }
           }
           m=(r+l)/2;
         }
         n2[stonen]=0;
-        stonen++;
+        //if(stonen==39) {
+          //stonen=0;
+        //}else{
+          stonen++;
+        //}
+        stoneCnt++;
       }
     }
   }
@@ -441,7 +461,7 @@ boolean judge(float x, float y, int sizeX, int sizeY) {
 
 boolean clearCondition() { //pwはwの一つ前の水
   if ( (s/60) > 15) {
-    if ((r-l) > (width-25/2) && stonen > 14) {
+    if ((r-l) >= width && stoneCnt > 24) {
       return  true;
     } else {
       return false;
