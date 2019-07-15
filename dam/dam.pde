@@ -2,6 +2,7 @@ int s = 0; //time
 int wn=600; //水の数
 int rectY=800;//メーター
 int rectD=0;//メーター
+int deadLine = 700; //ライン上限
 int cnt=0;//落ちた水の数
 int n=1;//メーターで使ったよ
 int ls=15;//大きい水が出てくるタイム的な
@@ -17,9 +18,10 @@ int[] n2=new int[mn];
 float r; //一番右にある石のx座標
 float l; //一番左にある石のx座標
 float m; //石たちの真ん中
-PFont font;
-float u; 
+PFont font; //フォント指定変数
+float u;
 int on = 0;
+int stoneCnt = 0; //置いてある石の数
 
 class Water {
   int size=int(random(25, 35));
@@ -106,20 +108,29 @@ class Material_Wood extends Material_Stone {//木のクラス
 class ClearDis {
   int[] score = new int[10];
   int highScore = 700;
-  int max = 10;
+  int time;
   boolean flag = false;
+  int diff = 100;
 
-  void makeScore(int time) {
-    if (highScore > time) {
-      highScore = (time/60);
+  void makeScore() {
+    time = s/60;
+    if (highScore > (time)) {
+      highScore = time;
     }
   }
 
-  void resultDisplay(int time) {
+  void resultDisplay() {
     textSize(20);
     fill(0);
-    text("クリアタイム:"+ (time/60), width/2, height/2);
-    text("本日のハイスコア:"+ highScore, width/2, height/2+30);
+    text("クリアタイム:"+ (time), width/2-diff, height/2);
+    text("本日のハイスコア:"+ highScore, width/2-diff, height/2+30);
+    text("もう一度遊ぶ？ Press[r]", width/2-diff, height/2+60);
+  }
+  
+  void gameover(){
+    fill(0);
+    text("game over", width/2-diff, height/2);
+    text("もう一度遊ぶ？ Press[r]", width/2-diff, height/2+30);
   }
 }
 
@@ -167,8 +178,7 @@ Water[] w1;
 LWater w2;
 Water2[] w3,w4;
 
-void setup() {
-  size(500, 800);
+void set(){
   font = createFont("MS Gothic", 24, true);
   textFont(font);
   stones = new Material_Stone[mn];
@@ -201,8 +211,14 @@ void setup() {
     w4[i].set(w4[i].x);
   }
   w2.x=random(200, 300);
-  wingLR=int(random(1, 3));
 }
+
+void setup() {
+  size(500, 800);
+  set();
+}
+
+
 
 void back() {//背景
   background(255);
@@ -321,14 +337,15 @@ void draw() {
     back();
     if (clearCondition() == true) { //クリア条件を満たしたら
       endImg.flag = true; //クリア時のフラグをかえる
-      endImg.makeScore(s); //ハイスコアを生成
+      endImg.makeScore(); //ハイスコアを生成
     }
     if (endImg.flag == true) {
-      endImg.resultDisplay(s/60); //クリア画面を表示
-    }else if (rectY==700 && endImg.flag == false) {
-      fill(0);
-      text("game over", width/2, height/2);
-    } else if(endImg.flag == false) {
+      endImg.resultDisplay(); //クリア画面を表示
+      retry();
+    }else if (rectY==deadLine) {
+      endImg.gameover();
+      retry();
+    } else  {
       fallingWater1(w1, 1);
       if (s/60>15) {
         fallingWater1(w4, 3);
@@ -447,5 +464,11 @@ boolean clearCondition() { //pwはwの一つ前の水
     }
   } else {
     return false;
+  }
+}
+
+void retry(){
+  if(keyPressed == true && key == 'r'){
+    set();
   }
 }
