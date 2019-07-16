@@ -1,24 +1,24 @@
-int s = 0; //time
-int wn=600; //水の数
-int rectY=800;//メーター
-int rectD=0;//メーター
-int deadLine = 700; //ライン上限
-int cnt=0;//落ちた水の数
-int n=1;//メーターで使ったよ
-int ls=15;//大きい水が出てくるタイム的な
+int s; //time
+int wn; //水の数
+int rectY;//メーター
+int rectD;//メーター
+int deadLine; //ライン上限
+int cnt;//落ちた水の数
+int n;//メーターで使ったよ
+int ls;//大きい水が出てくるタイム的な
 float wx, wy, sx, sy;
 int mn=40; //材料の個数
-int stonen=0;
-int woodn=0;
-int n1=0;
+int stonen;
+int woodn;
+int n1;
 int[] n2=new int[mn];
 float r; //一番右にある石のx座標
 float l; //一番左にある石のx座標
 float m; //石たちの真ん中
 PFont font; //フォント指定変数
 float u;
-int on = 0;
-int stoneCnt = 0; //置いてある石の数
+int on;
+int stoneCnt; //置いてある石の数
 
 class Water {
   int size=int(random(25, 35));
@@ -119,17 +119,21 @@ class ClearDis {
   }
 
   void resultDisplay() {
-    textSize(20);
+    float yDiff = 60;
+    textSize(40);
     fill(0);
-    text("クリアタイム:"+ (time), width/2-diff, height/2);
-    text("本日のハイスコア:"+ highScore, width/2-diff, height/2+30);
-    text("もう一度遊ぶ？ Press[r]", width/2-diff, height/2+60);
+    text("クリアタイム:"+ (time), width/2-diff*1.5, height/2-yDiff);
+    text("本日のハイスコア:"+ highScore, width/2-diff*1.8, height/2);
+    blink();
+    text("もう一度遊ぶ？ Press[r]", width/2-diff*2.0, height/2+yDiff);
   }
   
   void gameover(){
     fill(0);
-    text("game over", width/2-diff, height/2);
-    text("もう一度遊ぶ？ Press[r]", width/2-diff, height/2+30);
+    textSize(40);
+    text("GameOver", width/2-diff, height/2);
+    blink();
+    text("もう一度遊ぶ？ Press[r]", width/2-diff*2.0, height/2+40);
   }
 }
 
@@ -140,7 +144,7 @@ class Beaver { //ビーバークラス
 
   void display(float x1, float y1) {
     x = (x1 - Size/4);
-    y = (y1 - Size/4);
+    y = (y1 - Size/2);
     image(img, x, y, Size, Size);
   }
 }
@@ -151,7 +155,7 @@ class Title {
   int y = 0;
   int xSize = 500;
   int ySize = 800;
-  int diff = 100;//中央にするための差（気にしなくてok）
+  float diff = 100;//中央にするための差（気にしなくてok）
   PImage img = loadImage("title.jpeg");
   boolean pushSpace = true;
 
@@ -162,7 +166,38 @@ class Title {
     text("・操作説明", xSize/2-(diff*2), ySize/2-(diff*2));
     text("・マウス--ビーバーの移動", xSize/2-(diff*2), ySize/2-(diff*1.5));
     text("・Space長押し--オブジェクトの選択", xSize/2-(diff*2), ySize/2-diff);
-    text("Push [space] key", xSize/2-diff, ySize/2);
+    blink();
+    textSize(40);
+    text("Push [space] key", xSize/2-diff*1.5, ySize/2);
+  }
+}
+
+class Kaminari{
+  int x = 0;
+  int y = 30;
+  int xSize = 80;
+  int ySize = 80;
+  PImage img = loadImage("kaminari.png");
+  
+  void display(){
+    image(img,x,y,xSize,ySize);
+  }
+  
+  void move(){
+    x +=5;
+  }
+  
+  void appear(){
+    int time = s/60;
+    if(time >= 20){
+      if(time%10 == 0){
+        image(img,x,y,xSize,ySize);
+        x += 5;
+      }
+      if(x > width){
+        x = 0;
+      }
+    }
   }
 }
 
@@ -172,12 +207,27 @@ Material_Wood woods;
 Title startImg; //タイトル画面
 ClearDis endImg; //クリア後の画面
 Beaver beaver; //ビーバー
+Kaminari kaminari;
 
 Water[] w1; //上から出てくる水
 LWater w2; //大きい水
 Water2[] w3, w4; //横から出てくる水
 
 void set(){
+  s = 0;
+  wn = 600;
+  rectY = 800;
+  rectD = 0;
+  deadLine = 700;
+  cnt = 0;
+  n = 1;
+  ls = 15;
+  mn = 40;
+  stonen = 0;
+  woodn = 0;
+  n1 = 0;
+  on = 0;
+  stoneCnt = 0;
   font = createFont("MS Gothic", 24, true);
   textFont(font);
   stones = new Material_Stone[mn];
@@ -185,6 +235,7 @@ void set(){
   beaver = new Beaver();
   startImg = new Title();
   endImg = new ClearDis();
+  kaminari = new Kaminari();
   w1 = new Water[wn];
   w2 = new LWater(); 
   w3 = new Water2[wn];
@@ -284,10 +335,10 @@ void fallingWater1(Water[] water, int a) {
     
     for (int j = 0; j < stonen; j++) {
       //if (isHit(stones[j].x-7, stones[j].sizeX/2+1.5, stones[j].y, stones[j].sizeY/2+5, water[i])==true) {
-      doHit(stones[j].x-7, stones[j].sizeX/2+1.5, stones[j].y, stones[j].sizeY/2+5, water[i], a, i);
+      doHit(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i], a, i);
       for (int k = 1; k<stonen; k++) {
         //if (isHit(stones[k].x-7, stones[k].sizeX/2+1.5, stones[k].y, stones[k].sizeY/2+5, water[i])==true) {
-        doHit(stones[k].x-7, stones[k].sizeX/2+1.5, stones[k].y, stones[k].sizeY/2+5, water[i], a, i);
+        doHit(stones[k].x, stones[k].sizeX/2, stones[k].y, stones[k].sizeY/2, water[i], a, i);
         //}
       }
     }
@@ -362,6 +413,7 @@ void draw() {
       retry();
     } else  {
       fallingWater1(w1, 1);
+      kaminari.appear();
       if (s/60>15) {
         //fallingWater1(w4, 3);
       }
@@ -487,8 +539,16 @@ boolean clearCondition() { //pwはwの一つ前の水
   }
 }
 
-void retry(){
+void retry(){ // リトライ
   if(keyPressed == true && key == 'r'){
     set();
+  }
+}
+
+void blink(){ //点滅
+  if(frameCount/10 %2 == 0){
+    fill(0,255,255);
+  }else{
+    fill(0);
   }
 }
