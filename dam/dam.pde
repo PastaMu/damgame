@@ -54,7 +54,7 @@ class Water {
 class Water2 extends Water {
   float stepX=random(1, 3);
   float stepX2=stepX;
-  float stepY = random(4.0, 7.0);
+  float stepY = random(2.0, 6.0);
   void set(float x) {
     if (x>width/2) {
       stepX*=-1;
@@ -173,14 +173,14 @@ class Title {
 }
 
 class Kaminari{
-  int x = 0;
-  int y = 30;
-  int xSize = 80;
-  int ySize = 80;
+  float x = 0;
+  float y = 30;
+  int sizeX = 90;
+  int sizeY = 90;
   PImage img = loadImage("kaminari.png");
   
   void display(){
-    image(img,x,y,xSize,ySize);
+    image(img,x,y,sizeX,sizeY);
   }
   
   void move(){
@@ -191,7 +191,7 @@ class Kaminari{
     int time = s/60;
     if(time >= 20){
       if(time%10 == 0){
-        image(img,x,y,xSize,ySize);
+        image(img,x,y,sizeX,sizeY);
         x += 5;
       }
       if(x > width){
@@ -251,8 +251,8 @@ void set(){
     w4[i]=new Water2();
     w4[i].y=random(100, 200);
     if (i < wn/2) {
-      w3[i].x=random(-50, -5);
-      w4[i].x=random(-50, -5);
+      w3[i].x=0;
+      w4[i].x=0;
     } else {
       w3[i].x=random(width+5, width+50);
       w4[i].x=random(width+5, width+50);
@@ -286,37 +286,41 @@ void back() {//背景
 }
 
 void roller() {
-  if(woods.x<width+woods.sizeX) {
+  if(kaminari.x<width+kaminari.sizeX) {
     for(int i = 0; i < mn; i++) {
-      if(stones[i].x-stones[i].sizeX/2==woods.x+woods.sizeX/2&&woods.y-(stones[i].y-stones[i].sizeY/2)<=stones[i].sizeY/2&&(stones[i].y-stones[i].sizeY/2)-woods.y>=stones[i].sizeY/2) { 
-        stones[i].x=stones[i].sizeX/2+woods.x+woods.sizeX/2;
+      if(stones[i].x-stones[i].sizeX/2<=kaminari.x+kaminari.sizeX/2&&kaminari.y<=(stones[i].y+stones[i].sizeY)&&kaminari.y>=(stones[i].y-stones[i].sizeY)) { 
+        stones[i].x=(stones[i].sizeX/2+kaminari.x+kaminari.sizeX/2);
       }
     }
-    woods.x+=4;
+    kaminari.x+=4;
   }
 }
 
 boolean isHit(float x, float sizeX, float y, float sizeY, Water water) {
+  //if((y+40)<water.y) {
+   // return false;
+ // }else 
   if ((x-sizeX)<(water.x+water.size)&&water.x<(x+sizeX)&&(water.y+water.size)>=(y-sizeY)) {
     return true;
   }
+  
   return false;
 }
 
-void doHit(float x, float sizeX, float y, float sizeY, Water water, int a, int i) {
+void doHit(float x, float sizeX, float y, float sizeY, Water water,  int a) {
   if (isHit(x, sizeX, y, sizeY, water)==true) {
       water.stepY=0;
       water.stepX=random(3, 5);
-      if (m<(water.x+water.size/2)) { //
-        if (water.x<r||water.x<(x+sizeX)) { //||a!=1
-          if ((water.x+water.size)>=width&&water.y<y) { //||a!=1&&water.x<0
+      if (m<(water.x+water.size/2)) { 
+        if (water.x<r||water.x<(x+sizeX)) { 
+          if ((water.x+water.size)>=width&&water.y<y) { 
             water.stepX*=-1;
           }
           water.x += water.stepX;
         }
       }else{
-        if ((water.x+water.size)>l||(water.x+water.size)>(x-sizeX)) { //||a!=1&&
-          if (water.x<=0&&water.y<y) { //||a!=1&&(water.x+water.size)>width
+        if ((water.x+water.size)>l||(water.x+water.size)>(x-sizeX)) { 
+          if (water.x<=0&&water.y<y) { 
             water.stepX*=-1;
           }
           water.x -= water.stepX;
@@ -328,38 +332,15 @@ void doHit(float x, float sizeX, float y, float sizeY, Water water, int a, int i
   }
 }
 
-void doHit2(float x, float sizeX, float y, float sizeY, Water water, int i) {
-  if(isHit(x,sizeX,y,sizeY,water)==true) {
-    water.stepY=0;
-    water.stepX*=-1;
-  
-  if(water.y>y-sizeY) {
-    if(water.x+water.size>=x-sizeX) {
-      water.stepY=0;
-      water.stepX=0;
-    }
-  }
-  } 
-}
-
 void fallingWater1(Water[] water, int a) {
   for (int i = 0; i < wn; i++) {
     water[i].display();
     water[i].flow();
     
     for (int j = 0; j < stonen; j++) {
-      if(a==1) {
-        doHit(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i], a, i);
-      }else{
-        doHit2(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i], i);
-      }
+        doHit(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i],  a);
       for (int k = 0; k<stonen; k++) {
-        if(a==1) {
-          doHit(stones[k].x, stones[k].sizeX/2, stones[k].y, stones[k].sizeY/2, water[i], a, i);
-        }else{
-           doHit2(stones[k].x, stones[k].sizeX/2, stones[k].y, stones[k].sizeY/2, water[i],  i);
-        }
-
+           doHit(stones[k].x, stones[k].sizeX/2, stones[k].y, stones[k].sizeY/2, water[i],  a);
       }
     }
     meter(water[i], a, i);
@@ -399,15 +380,15 @@ void meter(Water w, int a, int i) {
       w.x=random(195, 305);
     } else {
       if (i < wn/2) {
-        w.x=-5;
+        w.x=0;
       } else {
-        w.x=width+5;
+        w.x=width;
       }
     }
     if (a==2) {
-      w.y=random(u, u+40);
-    } else if (a==3) {
-      w.y=random(100, 250);
+      w.y=u+40;
+    //} else if (a==3) {
+      //w.y=random(100, 250);
     }
     cnt+=1;
   }
@@ -433,20 +414,21 @@ void draw() {
       retry();
     } else  {
       fallingWater1(w1, 1);
-      kaminari.appear();
+      //kaminari.appear();
       if (s/60>15) {
         //fallingWater1(w4, 3);
       }
-      if (s/60>20) {
+      if (s/60>17) {
         fallingWater1(w3, 2);
         on=1;
       }
       fallingWater2();
-      if (s/60==40) {
-        woods.x=0;
-        woods.y=u-stones[0].sizeY/2;
+      if (s/60==15) {
+        kaminari.display();
+        kaminari.x=0;
+        kaminari.y=u-stones[0].sizeY/2;
       }
-      if (s/60>40) {
+      if (s/60>15) {
         roller();
       }
       if (cnt>wn/2) { //水が200個落ちたらメーターが増える
@@ -510,20 +492,18 @@ void put() {
           }
           if (on==0) {
             if (u < (stones[stonen].y+stones[stonen].sizeY/2)) {
-              u=stones[stonen].y+stones[stonen].sizeY/2;
+               u=stones[stonen].y+stones[stonen].sizeY/2;
             }
+          
             for (int i = 0; i < wn; i++) {
               w3[i].y=u+40;
             }
           }
+           
           m=(r+l)/2;
         }
         n2[stonen]=0;
-        //if(stonen==39) {
-          //stonen=0;
-        //}else{
-          stonen++;
-        //}
+        stonen++;
         stoneCnt++;
       }
     }
