@@ -172,6 +172,7 @@ class Title {
   }
 }
 
+
 class Kaminari{
   float x = 0;
   float y = 30;
@@ -187,16 +188,11 @@ class Kaminari{
     x +=5;
   }
   
-  void appear(){
-    int time = s/60;
-    if(time >= 20){
-      if(time%10 == 0){
-        image(img,x,y,sizeX,sizeY);
-        x += 5;
-      }
-      if(x > width){
-        x = 0;
-      }
+  void thunder(){
+    if(frameCount/10 %5== 0){
+      rect(0,0,width,height);
+      background(255,255,201,128);
+
     }
   }
 }
@@ -414,11 +410,17 @@ void draw() {
       retry();
     } else  {
       fallingWater1(w1, 1);
-      //kaminari.appear();
       if (s/60>15) {
         //fallingWater1(w4, 3);
       }
-      if (s/60>17) {
+      if(s/60 > 10){
+        kaminari.display();
+        kaminari.move();
+      }
+      if(s/60 > 13 && s/60 < 21){
+        kaminari.thunder();
+      }
+      if (s/60>20) {
         fallingWater1(w3, 2);
         on=1;
       }
