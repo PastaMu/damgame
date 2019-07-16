@@ -200,11 +200,11 @@ void set(){
     w4[i]=new Water2();
     w4[i].y=random(100, 200);
     if (i < wn/2) {
-      w3[i].x=random(-50, 0);
-      w4[i].x=random(-50, 0);
+      w3[i].x=random(-50, -5);
+      w4[i].x=random(-50, -5);
     } else {
-      w3[i].x=random(width, width+50);
-      w4[i].x=random(width, width+50);
+      w3[i].x=random(width+5, width+50);
+      w4[i].x=random(width+5, width+50);
     }
     w3[i].set(w3[i].x);
     w4[i].set(w4[i].x);
@@ -235,10 +235,10 @@ void back() {//背景
 }
 
 void roller() {
-  if(woods.x>width) {
+  if(woods.x<width+woods.sizeX) {
     for(int i = 0; i < mn; i++) {
-      if(stones[stonen].x-stones[stonen].sizeX/2==woods.x+woods.sizeX/2&&stones[stonen].y-stones[stonen].sizeY>=woods.y+woods.sizeY/2) { 
-        stones[stonen].x=stones[stonen].sizeX/2+woods.x+woods.sizeX/2;
+      if(stones[i].x-stones[i].sizeX/2==woods.x+woods.sizeX/2&&woods.y-(stones[i].y-stones[i].sizeY/2)<=stones[i].sizeY/2&&(stones[i].y-stones[i].sizeY/2)-woods.y>=stones[i].sizeY/2) { 
+        stones[i].x=stones[i].sizeX/2+woods.x+woods.sizeX/2;
       }
     }
     woods.x+=4;
@@ -246,7 +246,7 @@ void roller() {
 }
 
 boolean isHit(float x, float sizeX, float y, float sizeY, Water water) {
-  if ((x-sizeX)<(water.x+water.size/2)&&water.x<(x+sizeX)&&(water.y+water.size)>=(y-sizeY)&&(water.y+water.size)<(y+sizeY)) {
+  if ((x-sizeX)<(water.x+water.size)&&water.x<(x+sizeX)&&(water.y+water.size)>=(y-sizeY)) {
     return true;
   }
   return false;
@@ -256,16 +256,16 @@ void doHit(float x, float sizeX, float y, float sizeY, Water water, int a, int i
   if (isHit(x, sizeX, y, sizeY, water)==true) {
       water.stepY=0;
       water.stepX=random(3, 5);
-      if (a==1&&m<(water.x+water.size/2)||a!=1&&i<wn/2) {
-        if (water.x<r||water.x<(x+sizeX)||a!=1&&(water.x+water.size)>=stones[stonen].x-stones[stonen].sizeX/2) {
-          if ((water.x+water.size)>width&&water.y<y) {
+      if (m<(water.x+water.size/2)) { //
+        if (water.x<r||water.x<(x+sizeX)) { //||a!=1
+          if ((water.x+water.size)>=width&&water.y<y) { //||a!=1&&water.x<0
             water.stepX*=-1;
           }
           water.x += water.stepX;
         }
-      } else if(a==1&&m>=(water.x+water.size/2)||a!=1&&i>=wn/2){
-        if ((water.x+water.size/2)>l||(water.x+water.size/2)>(x-sizeX)||a!=1&&water.x>=stones[stonen].x+stones[stonen].sizeX/2) {
-          if (water.x<0&&water.y<y) {
+      }else{
+        if ((water.x+water.size)>l||(water.x+water.size)>(x-sizeX)) { //||a!=1&&
+          if (water.x<=0&&water.y<y) { //||a!=1&&(water.x+water.size)>width
             water.stepX*=-1;
           }
           water.x -= water.stepX;
@@ -277,18 +277,37 @@ void doHit(float x, float sizeX, float y, float sizeY, Water water, int a, int i
   }
 }
 
+void doHit2(float x, float sizeX, float y, float sizeY, Water water, int i) {
+  if(isHit(x,sizeX,y,sizeY,water)==true) {
+    water.stepY=0;
+    water.stepX*=-1;
+  
+  if(water.y>y-sizeY) {
+    if(water.x+water.size>=x-sizeX) {
+      water.stepY=0;
+      water.stepX=0;
+    }
+  }
+  } 
+}
+
 void fallingWater1(Water[] water, int a) {
   for (int i = 0; i < wn; i++) {
     water[i].display();
     water[i].flow();
     
     for (int j = 0; j < stonen; j++) {
-      //if (isHit(stones[j].x-7, stones[j].sizeX/2+1.5, stones[j].y, stones[j].sizeY/2+5, water[i])==true) {
-      doHit(stones[j].x-7, stones[j].sizeX/2+1.5, stones[j].y, stones[j].sizeY/2+5, water[i], a, i);
-      for (int k = 1; k<stonen; k++) {
-        //if (isHit(stones[k].x-7, stones[k].sizeX/2+1.5, stones[k].y, stones[k].sizeY/2+5, water[i])==true) {
-        doHit(stones[k].x-7, stones[k].sizeX/2+1.5, stones[k].y, stones[k].sizeY/2+5, water[i], a, i);
-        //}
+      if(a==1) {
+        doHit(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i], a, i);
+      }else{
+        doHit2(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i], i);
+      }
+      for (int k = 0; k<stonen; k++) {
+        if(a==1) {
+          doHit(stones[k].x, stones[k].sizeX/2, stones[k].y, stones[k].sizeY/2, water[i], a, i);
+        }else{
+           doHit2(stones[k].x, stones[k].sizeX/2, stones[k].y, stones[k].sizeY/2, water[i],  i);
+        }
       }
     }
     meter(water[i], a, i);
@@ -328,13 +347,13 @@ void meter(Water w, int a, int i) {
       w.x=random(195, 305);
     } else {
       if (i < wn/2) {
-        w.x=0;
+        w.x=-5;
       } else {
-        w.x=width;
+        w.x=width+5;
       }
     }
     if (a==2) {
-      w.y=random(u, u+50);
+      w.y=random(u, u+40);
     } else if (a==3) {
       w.y=random(100, 250);
     }
@@ -365,14 +384,14 @@ void draw() {
       if (s/60>15) {
         //fallingWater1(w4, 3);
       }
-      if (s/60>30) {
+      if (s/60>20) {
         fallingWater1(w3, 2);
         on=1;
       }
       fallingWater2();
       if (s/60==40) {
         woods.x=0;
-        woods.y=stones[0].y;
+        woods.y=u-stones[0].sizeY/2;
       }
       if (s/60>40) {
         roller();
