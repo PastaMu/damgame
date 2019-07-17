@@ -284,7 +284,7 @@ void back() {//背景
 void roller() {
   if(kaminari.x<width+kaminari.sizeX) {
     for(int i = 0; i < mn; i++) {
-      if(stones[i].x-stones[i].sizeX/2<=kaminari.x+kaminari.sizeX/2&&kaminari.y<=(stones[i].y+stones[i].sizeY)&&kaminari.y>=(stones[i].y-stones[i].sizeY)) { 
+      if(stones[i].x-stones[i].sizeX/2<=kaminari.x+kaminari.sizeX/2&&(kaminari.y+kaminari.sizeY/2)<=(stones[i].y+stones[i].sizeY)&&(kaminari.y+kaminari.sizeY/2)>=(stones[i].y-stones[i].sizeY)) { 
         stones[i].x=(stones[i].sizeX/2+kaminari.x+kaminari.sizeX/2);
       }
     }
@@ -293,30 +293,29 @@ void roller() {
 }
 
 boolean isHit(float x, float sizeX, float y, float sizeY, Water water) {
-  //if((y+40)<water.y) {
-   // return false;
- // }else 
-  if ((x-sizeX)<(water.x+water.size)&&water.x<(x+sizeX)&&(water.y+water.size)>=(y-sizeY)) {
+  if((y+40)<water.y) {
+    return false;
+  }else if ((x-sizeX)<(water.x+water.size)&&water.x<(x+sizeX)&&(water.y+water.size)>=(y-sizeY)) {
     return true;
   }
   
   return false;
 }
 
-void doHit(float x, float sizeX, float y, float sizeY, Water water,  int a) {
+void doHit(float x, float sizeX, float y, float sizeY, Water water,  int a, int i) {
   if (isHit(x, sizeX, y, sizeY, water)==true) {
       water.stepY=0;
       water.stepX=random(3, 5);
       if (m<(water.x+water.size/2)) { 
         if (water.x<r||water.x<(x+sizeX)) { 
-          if ((water.x+water.size)>=width&&water.y<y) { 
+          if (a==1&&(water.x+water.size)>=width&&water.y<y) { 
             water.stepX*=-1;
           }
           water.x += water.stepX;
         }
       }else{
         if ((water.x+water.size)>l||(water.x+water.size)>(x-sizeX)) { 
-          if (water.x<=0&&water.y<y) { 
+          if (a==1&&water.x<=0&&water.y<y) { 
             water.stepX*=-1;
           }
           water.x -= water.stepX;
@@ -328,15 +327,48 @@ void doHit(float x, float sizeX, float y, float sizeY, Water water,  int a) {
   }
 }
 
+void doHit2(float x, float sizeX, float y, float sizeY, Water water,  int a, int i) {
+  if (isHit(x, sizeX, y, sizeY, water)==true) {
+      water.stepY=0;
+      water.stepX=random(3, 5);
+      if(i>=wn/2) {
+        if ((water.x+water.size)>l||(water.x+water.size)>(x-sizeX)) { 
+          if (water.x<=0&&water.y<y) { 
+            water.stepX*=-1;
+          }
+          water.x -= water.stepX;
+        }
+      }else {
+        if (water.x<r||water.x<(x+sizeX)) { 
+          if ((water.x+water.size)>=width&&water.y<y) { 
+            water.stepX*=-1;
+          }
+          
+          water.x += water.stepX;
+        }
+      }
+  } else{
+    water.stepY=water.stepY2;
+  }
+}
+
 void fallingWater1(Water[] water, int a) {
   for (int i = 0; i < wn; i++) {
     water[i].display();
     water[i].flow();
     
     for (int j = 0; j < stonen; j++) {
-        doHit(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i],  a);
+      if(a==1) {
+        doHit(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i],  a,i);
+      }else{
+        doHit2(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i],  a,i);
+      }
       for (int k = 0; k<stonen; k++) {
-           doHit(stones[k].x, stones[k].sizeX/2, stones[k].y, stones[k].sizeY/2, water[i],  a);
+        if(a==1) {
+          doHit(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i],  a,i);
+        }else{
+           doHit2(stones[k].x, stones[k].sizeX/2, stones[k].y, stones[k].sizeY/2, water[i],  a,i);
+        }
       }
     }
     meter(water[i], a, i);
@@ -428,7 +460,7 @@ void draw() {
       if (s/60==15) {
         kaminari.display();
         kaminari.x=0;
-        kaminari.y=u-stones[0].sizeY/2;
+        kaminari.y=u-stones[0].sizeY*2;
       }
       if (s/60>15) {
         roller();
@@ -481,10 +513,12 @@ void put() {
       } else {
         stones[stonen].x=sx;
         stones[stonen].y=sy;
-        if (stonen==0) {
-          r=stones[0].x+stones[0].sizeX/2;
-          l=stones[0].x-stones[0].sizeX/2;
-          u=stones[0].y+stones[0].sizeY/2;
+        if (stonen==0||s/60>=20&&s/60<=23) {
+          r=stones[stonen].x+stones[stonen].sizeX/2;
+          l=stones[stonen].x-stones[stonen].sizeX/2;
+          if(on==0) {
+            u=stones[stonen].y+stones[stonen].sizeY/2;
+          }
         } else {
           if (r<(stones[stonen].x+stones[stonen].sizeX/2)) {
             r=stones[stonen].x+stones[stonen].sizeX/2;
