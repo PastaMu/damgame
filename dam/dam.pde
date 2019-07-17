@@ -110,6 +110,9 @@ class ClearDis {
   int time;
   boolean flag = false;
   int diff = 100;
+  PImage img = loadImage("Beaver.png");
+  PImage img2 = loadImage("Beaverdie.png");
+  PImage img3 = loadImage("tama.png");
 
   void makeScore() {
     time = s/60;
@@ -129,11 +132,14 @@ class ClearDis {
   }
   
   void gameover(){
-    fill(0);
+    background(0);
+    fill(255);
+    image(img2,width/2-30,height/2);
+    image(img3,width/3-40,height/3*2,width/4,width/4);
     textSize(40);
-    text("GameOver", width/2-diff, height/2);
+    text("GameOver", width/2-diff, height/2-10);
     blink();
-    text("もう一度遊ぶ？ Press[r]", width/2-diff*2.0, height/2+40);
+    text("もう一度遊ぶ？ Press[r]", width/2-diff*2.0-10, height/2+30);
   }
 }
 
@@ -176,8 +182,8 @@ class Title {
 class Kaminari{
   float x = 0;
   float y = 30;
-  int sizeX = 90;
-  int sizeY = 90;
+  int sizeX = 100;
+  int sizeY = 100;
   PImage img = loadImage("kaminari.png");
   PImage go = loadImage("go.png");
   int textX = 50;
@@ -203,15 +209,6 @@ class Kaminari{
     image(go,width-textX*2.5+diff, textY+diff, fontX,fontY);
     image(go,width-textX*2.5+diff*2, textY+diff*2, fontX,fontY);
   }
-  
-  void thunder(){
-    if(frameCount/10 %2== 0){
-      rect(0,0,width,height);
-      background(255,255,201,128);
-      gogogo();
-    }
-  }
-  
 }
 
 
@@ -224,7 +221,7 @@ Kaminari kaminari;//雷エフェクト
 
 Water[] w1; //上から出てくる水
 LWater w2; //大きい水
-Water2[] w3, w4; //横から出てくる水
+Water2[] w3; //横から出てくる水
 
 void set(){
   s = 0;
@@ -252,7 +249,6 @@ void set(){
   w1 = new Water[wn];
   w2 = new LWater(); 
   w3 = new Water2[wn];
-  w4 = new Water2[wn];
   for (int i = 0; i < mn; i++) {
     stones[i]=new Material_Stone();
     n2[i]=0;
@@ -261,17 +257,12 @@ void set(){
     w1[i]=new Water();
     w1[i].x=random(195, 305);
     w3[i]=new Water2();
-    w4[i]=new Water2();
-    w4[i].y=random(100, 200);
     if (i < wn/2) {
       w3[i].x=0;
-      w4[i].x=0;
     } else {
       w3[i].x=random(width+5, width+50);
-      w4[i].x=random(width+5, width+50);
     }
     w3[i].set(w3[i].x);
-    w4[i].set(w4[i].x);
   }
   w2.x=random(200, 300);
 }
@@ -300,9 +291,10 @@ void back() {//背景
 
 void roller() {
   if(kaminari.x<width+kaminari.sizeX) {
-    for(int i = 0; i < mn; i++) {
-      if(stones[i].x-stones[i].sizeX/2<=kaminari.x+kaminari.sizeX/2&&(kaminari.y+kaminari.sizeY/2)<=(stones[i].y+stones[i].sizeY)&&(kaminari.y+kaminari.sizeY/2)>=(stones[i].y-stones[i].sizeY)) { 
+    for(int i = 0; i < stonen; i++) {
+      if(kaminari.x>=stones[i].x) {
         stones[i].x=(stones[i].sizeX/2+kaminari.x+kaminari.sizeX/2);
+        stones[i].y=(kaminari.y+kaminari.sizeY/2);
       }
     }
     kaminari.x+=4;
@@ -310,7 +302,7 @@ void roller() {
 }
 
 boolean isHit(float x, float sizeX, float y, float sizeY, Water water) {
-  if((y+40)<water.y) {
+  if((y+30)<water.y) {
     return false;
   }else if ((x-sizeX)<(water.x+water.size)&&water.x<(x+sizeX)&&(water.y+water.size)>=(y-sizeY)) {
     return true;
@@ -432,13 +424,25 @@ void meter(Water w, int a, int i) {
     }
     if (a==2) {
       w.y=u+40;
-    //} else if (a==3) {
-      //w.y=random(100, 250);
     }
     cnt+=1;
   }
 }
 
+void thunder(){
+    if(frameCount/10 %2== 0){
+      rect(0,0,width,height);
+      background(255,255,201,128);
+      kaminari.gogogo();
+      for(int i = 0; i < wn; i++) {
+        if(isHit(beaver.x, beaver.Size/2, beaver.y, beaver.Size/2, w1[i])) {
+          endImg.gameover();
+          retry();
+        }
+      }
+    }
+  }
+  
 void draw() {
   if (startImg.pushSpace == true) {
     startImg.display();
@@ -460,28 +464,23 @@ void draw() {
       retry();
     } else  {
       fallingWater1(w1, 1);
-      if (s/60>15) {
-        //fallingWater1(w4, 3);
-      }
       if(s/60 > 11){
         kaminari.display();
         kaminari.move();
       }
-      if(s/60 > 13 && s/60 < 21){
-        kaminari.thunder();
-        //kaminari.gogogo();
+      if(s/60 > 13 && s/60 < 16){
+        thunder();
       }
-      if (s/60>20) {
+      if (s/60>=15) {
         fallingWater1(w3, 2);
         on=1;
       }
       fallingWater2();
-      if (s/60==15) {
-        kaminari.display();
+      if (s/60==14) {
         kaminari.x=0;
         kaminari.y=u-stones[0].sizeY*2;
       }
-      if (s/60>15) {
+      if (s/60>14) {
         roller();
       }
       if (cnt>wn/2) { //水が200個落ちたらメーターが増える
@@ -584,7 +583,7 @@ boolean judge(float x, float y, int sizeX, int sizeY) {
 
 boolean clearCondition() { //pwはwの一つ前の水
   if ( (s/60) > 15) {
-    if ((r-l) >= width && stoneCnt > 24) {
+    if ((r-l) >= width && stoneCnt > 21) {
       return  true;
     } else {
       return false;
