@@ -133,7 +133,7 @@ class ClearDis {
     image(fall, f_x, f_y, f_sizeX, f_sizeY);
     image(beaver_b,b_x, b_y, b_size, b_size);
     image(beaver, width-b_x, b_y, b_size, b_size);
-    image(signboard,width/2-diff*1.5,height/2-yDiff, s_size, s_size);
+    image(signboard,width/2-diff*2.4,height/2-yDiff*3, s_size, s_size);
     textSize(40);
     fill(0);
     text("クリアタイム:"+ (time), width/2-diff*1.5, height/2-yDiff);
