@@ -19,6 +19,7 @@ PFont font; //フォント指定変数
 float u;
 int on;
 int stoneCnt; //置いてある石の数
+int scene;
 
 
 class Water {
@@ -109,7 +110,6 @@ class ClearDis {
   int[] score = new int[10];
   int highScore = 700;
   int time;
-  boolean flag = false;
   int diff = 100;
   PImage beaver = loadImage("Beaver.png");
   PImage beaver_b = loadImage("Beaver2.png");
@@ -173,7 +173,6 @@ class Title {
   int xSize = 500;
   int ySize = 800;
   float diff = 100;//中央にするための差（気にしなくてok）
-  boolean pushSpace = true;
   PImage fall_img = loadImage("taki.jpg");
   PImage beaver_img = loadImage("Beaver.png");
   PImage beaver_img2 = loadImage("Beaver2.png");
@@ -454,7 +453,7 @@ void thunder(){
       kaminari.gogogo();
       for(int i = 0; i < wn; i++) {
         if(isHit(beaver.x, beaver.Size/2, beaver.y, beaver.Size/2, w1[i])) {
-          endImg.gameover();
+          scene=3;
           retry();
         }
       }
@@ -462,25 +461,19 @@ void thunder(){
   }
   
 void draw() {
-  if (startImg.pushSpace == true) {
+  if(scene==0) {
     startImg.display();
-    //kaminari.gogogo();
     if ((keyPressed == true) && (key == ' ')) {
-      startImg.pushSpace = false;
+      scene=1;
     }
-  } else {
+  } else if(scene==1){
     back();
     if (clearCondition() == true) { //クリア条件を満たしたら
-      endImg.flag = true; //クリア時のフラグをかえる
       endImg.makeScore(); //ハイスコアを生成
     }
-    if (endImg.flag == true) {
-      endImg.resultDisplay(); //クリア画面を表示
-      retry();
-    }else if (rectY==deadLine) {
-      endImg.gameover();
-      retry();
-    } else  {
+    if (rectY==deadLine) {
+      scene=3;
+    }
       fallingWater1(w1, 1);
       if(s/60 > 11){
         kaminari.display();
@@ -512,8 +505,13 @@ void draw() {
       rect(0, rectY, width, rectD);
       //時間
       s++;
-    }
     put();
+  }else if(scene==2) {
+    endImg.resultDisplay(); //クリア画面を表示
+    retry();
+  }else{
+    endImg.gameover();
+    retry();
   }
 }
 
@@ -599,9 +597,10 @@ boolean judge(float x, float y, int sizeX, int sizeY) {
   }
 }
 
-boolean clearCondition() { //pwはwの一つ前の水
+boolean clearCondition() { //pwはwの一つ前の
   if ( (s/60) > 15) {
-    if ((r-l) >= width && stoneCnt > 21) {
+    if ((r-l) >= width && stoneCnt > 18) {
+      scene=2;
       return  true;
     } else {
       return false;
@@ -613,6 +612,7 @@ boolean clearCondition() { //pwはwの一つ前の水
 
 void retry(){ // リトライ
   if(keyPressed == true && key == 'r'){
+    scene=1;
     set();
   }
 }
