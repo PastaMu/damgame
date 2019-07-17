@@ -163,7 +163,7 @@ class Title {
     image(img, x, y, xSize, ySize);
     textSize(25);
     fill(0);
-    text("・操作説明", xSize/2-(diff*2), ySize/2-(diff*2));
+    text("・", xSize/2-(diff*2), ySize/2-(diff*2));
     text("・マウス--ビーバーの移動", xSize/2-(diff*2), ySize/2-(diff*1.5));
     text("・Space長押し--オブジェクトの選択", xSize/2-(diff*2), ySize/2-diff);
     blink();
@@ -178,6 +178,13 @@ class Kaminari{ //雷のクラス
   int xSize = 80;
   int ySize = 80;
   PImage img = loadImage("kaminari.png");
+  PImage go = loadImage("go.png");
+  int textX = 50;
+  int diff = 30;
+  int textY = height - diff*10;
+  int fontX = 50;
+  int fontY = 50;
+
   
   void display(){
     image(img,x,y,xSize,ySize);
@@ -187,12 +194,23 @@ class Kaminari{ //雷のクラス
     x +=5;
   }
   
+    void gogogo(){
+    image(go,textX,textY,fontX,fontY);
+    image(go,textX+diff, textY+diff, fontX,fontY);
+    image(go,textX+diff*2, textY+diff*2, fontX,fontY);
+    image(go,width-textX*2.5, textY, fontX,fontY);
+    image(go,width-textX*2.5+diff, textY+diff, fontX,fontY);
+    image(go,width-textX*2.5+diff*2, textY+diff*2, fontX,fontY);
+  }
+  
   void thunder(){
-    if(frameCount/10 %5== 0){
+    if(frameCount/10 %2== 0){
       rect(0,0,width,height);
       background(255,255,201,128);
+      gogogo();
     }
   }
+  
 }
 
 
@@ -201,7 +219,7 @@ Material_Wood woods;
 Title startImg; //タイトル画面
 ClearDis endImg; //クリア後の画面
 Beaver beaver; //ビーバー
-Kaminari kaminari;
+Kaminari kaminari;//雷エフェクト
 
 Water[] w1; //上から出てくる水
 LWater w2; //大きい水
@@ -410,6 +428,7 @@ void meter(Water w, int a, int i) {
 void draw() {
   if (startImg.pushSpace == true) {
     startImg.display();
+    //kaminari.gogogo();
     if ((keyPressed == true) && (key == ' ')) {
       startImg.pushSpace = false;
     }
@@ -430,12 +449,13 @@ void draw() {
       if (s/60>15) {
         //fallingWater1(w4, 3);
       }
-      if(s/60 > 10){
+      if(s/60 > 11){
         kaminari.display();
         kaminari.move();
       }
       if(s/60 > 13 && s/60 < 21){
         kaminari.thunder();
+        //kaminari.gogogo();
       }
       if (s/60>20) {
         fallingWater1(w3, 2);
