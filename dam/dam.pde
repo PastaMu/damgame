@@ -20,6 +20,7 @@ float u;
 int on;
 int stoneCnt; //置いてある石の数
 
+
 class Water {
   int size=int(random(25, 35));
   float x;
@@ -78,7 +79,7 @@ class LWater extends Water { //大きい水
 }
 
 class Material_Stone {//石のクラス
-  PImage img = loadImage("stone.png");
+  PImage stone_img = loadImage("stone.png");
   int sizeX = 40;
   int sizeY = 30;
   //stoneの真ん中
@@ -86,12 +87,12 @@ class Material_Stone {//石のクラス
   float y = 40+sizeY/2;
 
   void display() {
-    image(img, x-sizeX/2, y-sizeY/2, sizeX, sizeY);
+    image(stone_img, x-sizeX/2, y-sizeY/2, sizeX, sizeY);
   }
 }
 
 class Material_Wood extends Material_Stone {//木のクラス
-  PImage img = loadImage("wood.png");
+  PImage wood_img = loadImage("wood.png");
   int sizeX = 110;
   int sizeY = 35;
   //wood の真ん中
@@ -99,7 +100,7 @@ class Material_Wood extends Material_Stone {//木のクラス
   float y = 90 + 35/6;
 
   void display() {
-    image(img, x-sizeX/2, y-sizeY/6, sizeX, sizeY);
+    image(wood_img, x-sizeX/2, y-sizeY/6, sizeX, sizeY);
   }
 }
 
@@ -110,7 +111,14 @@ class ClearDis {
   int time;
   boolean flag = false;
   int diff = 100;
-
+  PImage beaver = loadImage("Beaver.png");
+  PImage beaver_b = loadImage("Beaver2.png");
+  PImage fall = loadImage("taki.jpg");
+  PImage signboard = loadImage("kanban.png");
+  int f_x = 0, f_y = 0, f_sizeX = 500, f_sizeY = 800;
+  int b_x = width/4 ,b_y = height-height/6, b_size = 100; //ビーバーのx,y,size
+  int s_x = width/4, s_y = height-height/6,s_size = 500;//看板のx,y,size
+  
   void makeScore() {
     time = s/60;
     if (highScore > (time)) {
@@ -120,6 +128,10 @@ class ClearDis {
 
   void resultDisplay() {
     float yDiff = 60;
+    image(fall, f_x, f_y, f_sizeX, f_sizeY);
+    image(beaver_b,b_x, b_y, b_size, b_size);
+    image(beaver, width-b_x, b_y, b_size, b_size);
+    image(signboard,width/2-diff*1.5,height/2-yDiff, s_size, s_size);
     textSize(40);
     fill(0);
     text("クリアタイム:"+ (time), width/2-diff*1.5, height/2-yDiff);
@@ -138,14 +150,14 @@ class ClearDis {
 }
 
 class Beaver { //ビーバークラス
-  PImage img = loadImage("Beaver.png");
+  PImage beaver_img = loadImage("Beaver.png");
   float x, y;
   int Size = 70;
 
   void display(float x1, float y1) {
     x = (x1 - Size/4);
     y = (y1 - Size/2);
-    image(img, x, y, Size, Size);
+    image(beaver_img, x, y, Size, Size);
   }
 }
 
@@ -156,19 +168,25 @@ class Title {
   int xSize = 500;
   int ySize = 800;
   float diff = 100;//中央にするための差（気にしなくてok）
-  PImage img = loadImage("title.jpeg");
   boolean pushSpace = true;
+  PImage fall_img = loadImage("taki.jpg");
+  PImage beaver_img = loadImage("Beaver.png");
+  PImage beaver_img2 = loadImage("Beaver2.png");
+  int x_b = width/4; //ビーバーのx
+  int y_b = height-height/6;//ビーバーのy
 
   void display() {
-    image(img, x, y, xSize, ySize);
+    image(fall_img, x, y, xSize, ySize);
+    image(beaver_img2,x_b,y_b,100,100);
+    image(beaver_img,width-x_b,y_b,100,100);
     textSize(25);
     fill(0);
-    text("・", xSize/2-(diff*2), ySize/2-(diff*2));
-    text("・マウス--ビーバーの移動", xSize/2-(diff*2), ySize/2-(diff*1.5));
-    text("・Space長押し--オブジェクトの選択", xSize/2-(diff*2), ySize/2-diff);
+    text("<操作説明>", xSize/2-(diff*2.2), ySize/1.5-(diff*2));
+    text("・マウス--ビーバーの移動", xSize/2-(diff*2.2), ySize/1.5-(diff*1.5));
+    text("・Space長押し--オブジェクトの選択", xSize/2-(diff*2.2), ySize/1.5-diff);
     blink();
     textSize(40);
-    text("Push [space] key", xSize/2-diff*1.5, ySize/2);
+    text("Push [space] key", xSize/2-diff*1.7, ySize/1.5);
   }
 }
 
@@ -178,8 +196,8 @@ class Kaminari{
   float y = 30;
   int sizeX = 90;
   int sizeY = 90;
-  PImage img = loadImage("kaminari.png");
-  PImage go = loadImage("go.png");
+  PImage kaminari_img = loadImage("kaminari.png");
+  PImage go_img = loadImage("go.png");
   int textX = 50;
   int diff = 30;
   int textY = height - diff*10;
@@ -188,7 +206,7 @@ class Kaminari{
 
   
   void display(){
-    image(img,x,y,sizeX,sizeY);
+    image(kaminari_img,x,y,sizeX,sizeY);
   }
   
   void move(){
@@ -196,12 +214,12 @@ class Kaminari{
   }
   
     void gogogo(){
-    image(go,textX,textY,fontX,fontY);
-    image(go,textX+diff, textY+diff, fontX,fontY);
-    image(go,textX+diff*2, textY+diff*2, fontX,fontY);
-    image(go,width-textX*2.5, textY, fontX,fontY);
-    image(go,width-textX*2.5+diff, textY+diff, fontX,fontY);
-    image(go,width-textX*2.5+diff*2, textY+diff*2, fontX,fontY);
+    image(go_img,textX,textY,fontX,fontY);
+    image(go_img,textX+diff, textY+diff, fontX,fontY);
+    image(go_img,textX+diff*2, textY+diff*2, fontX,fontY);
+    image(go_img,width-textX*2.5, textY, fontX,fontY);
+    image(go_img,width-textX*2.5+diff, textY+diff, fontX,fontY);
+    image(go_img,width-textX*2.5+diff*2, textY+diff*2, fontX,fontY);
   }
   
   void thunder(){
