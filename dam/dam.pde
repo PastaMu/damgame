@@ -21,7 +21,7 @@ int on;
 int stoneCnt; //置いてある石の数
 int scene; //はじめの画面=０,プレイ画面=1,クリア画面=2,ゲームオーバー画面=3
 int wood_cnt; //木に当たった水の数
-
+PImage back;
 
 class Water {
   int size=int(random(25, 35));
@@ -81,7 +81,7 @@ class LWater extends Water { //大きい水
 }
 
 class Material_Stone {//石のクラス
-  PImage stone_img = loadImage("stone.png");
+  PImage stone_img=loadImage("stone.png");
   int sizeX = 40;
   int sizeY = 30;
   //stoneの真ん中
@@ -250,6 +250,7 @@ Water[] w1; //上から出てくる水
 LWater w2; //大きい水
 Water2[] w3; //横から出てくる水
 
+
 void set(){
   s = 0;
   wn = 600;
@@ -293,10 +294,11 @@ void set(){
     w3[i].set(w3[i].x);
   }
   w2.x=random(200, 300);
+  
 }
 
 void setup() {
-  size(500, 800);
+  size(498, 800);
   set();
 }
 
@@ -315,7 +317,7 @@ void back() {//背景
 void roller() {
   if(kaminari.x<width+kaminari.sizeX) {
     for(int i = 0; i < stonen; i++) {
-      if(kaminari.x>=stones[i].x) {
+      if(kaminari.x>=(stones[i].x-stones[i].sizeX/2)&&kaminari.x<=(stones[i].x+stones[i].sizeX/2)) {
         stones[i].x=(stones[i].sizeX/2+kaminari.x+kaminari.sizeX/2);
         stones[i].y=(kaminari.y+kaminari.sizeY/2);
       }
@@ -436,7 +438,7 @@ void fallingWater2() { //大きい水の処理
     w2.x=random(250,350);
     w2.y=0;
     ls+=ls;
-    n+=5; //落ちたら一気にメーターが増える
+    n+=7; //落ちたら一気にメーターが増える
   }
 }
 
@@ -506,7 +508,7 @@ void draw() {
       if (s/60>14) {
         roller();
       }
-      if (cnt>wn/2) { //水が200個落ちたらメーターが増える
+      if (cnt>wn/3) { //水が200個落ちたらメーターが増える
         rectD=n;
         rectY=height-n;
         n+=1;
