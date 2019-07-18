@@ -7,7 +7,7 @@ int cnt;//落ちた水の数
 int n;//メーターで使ったよ
 int ls;//大きい水が出てくるタイム的な
 float wx, wy, sx, sy;
-int mn=40; //材料の個数
+int mn=35; //材料の個数
 int stonen;
 int woodn;
 int n1;
@@ -19,7 +19,8 @@ PFont font; //フォント指定変数
 float u;
 int on;
 int stoneCnt; //置いてある石の数
-int scene;
+int scene; //はじめの画面=０,プレイ画面=1,クリア画面=2,ゲームオーバー画面=3
+int wood_cnt; //木に当たった水の数
 
 
 class Water {
@@ -102,6 +103,15 @@ class Material_Wood extends Material_Stone {//木のクラス
 
   void display() {
     image(wood_img, x-sizeX/2, y-sizeY/6, sizeX, sizeY);
+  }
+  
+  void move() {
+    if(y+sizeY/2<=height) {
+      y+=5;
+    }
+    if(y+sizeY/2>=height) {
+      x=0;
+    }
   }
 }
 
@@ -257,6 +267,7 @@ void set(){
   stoneCnt = 0;
   font = createFont("MS Gothic", 24, true);
   textFont(font);
+  wood_cnt=0;
   stones = new Material_Stone[mn];
   woods = new Material_Wood();
   beaver = new Beaver();
@@ -299,11 +310,6 @@ void back() {//背景
   textSize(20);
   text("time:"+s/60, 10, 20);
   noStroke();
-  for (int i = 0; i < mn; i++) {
-    stones[i].display();
-  }
-  woods.display();
-  beaver.display(mouseX, mouseY);
 }
 
 void roller() {
@@ -328,7 +334,7 @@ boolean isHit(float x, float sizeX, float y, float sizeY, Water water) {
   return false;
 }
 
-void doHit(float x, float sizeX, float y, float sizeY, Water water,  int a, int i) {
+void doHit(float x, float sizeX, float y, float sizeY, Water water,  int a) {
   if (isHit(x, sizeX, y, sizeY, water)==true) {
       water.stepY=0;
       water.stepX=random(3, 5);
@@ -353,7 +359,7 @@ void doHit(float x, float sizeX, float y, float sizeY, Water water,  int a, int 
   }
 }
 
-void doHit2(float x, float sizeX, float y, float sizeY, Water water,  int a, int i) {
+void doHit2(float x, float sizeX, float y, float sizeY, Water water,int i) {
   if (isHit(x, sizeX, y, sizeY, water)==true) {
       water.stepY=0;
       water.stepX=random(3, 5);
@@ -385,16 +391,22 @@ void fallingWater1(Water[] water, int a) {
     
     for (int j = 0; j < stonen; j++) {
       if(a==1) {
-        doHit(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i],  a,i);
+        doHit(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i],  a);
       }else{
-        doHit2(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i],  a,i);
+        doHit2(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i], i);
       }
       for (int k = 0; k<stonen; k++) {
         if(a==1) {
-          doHit(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i],  a,i);
+          doHit(stones[j].x, stones[j].sizeX/2, stones[j].y, stones[j].sizeY/2, water[i],  a);
         }else{
-           doHit2(stones[k].x, stones[k].sizeX/2, stones[k].y, stones[k].sizeY/2, water[i],  a,i);
+           doHit2(stones[k].x, stones[k].sizeX/2, stones[k].y, stones[k].sizeY/2, water[i], i);
         }
+      }
+    }
+    if(i%100==0&&isHit(woods.x,woods.sizeX/2,woods.y,woods.sizeY/2,water[i])==true) {
+      wood_cnt++;
+      if(wood_cnt>=10) {
+        woods.move();
       }
     }
     meter(water[i], a, i);
@@ -471,7 +483,7 @@ void draw() {
     if (clearCondition() == true) { //クリア条件を満たしたら
       endImg.makeScore(); //ハイスコアを生成
     }
-    if (rectY==deadLine) {
+    if (rectY<=deadLine) {
       scene=3;
     }
       fallingWater1(w1, 1);
@@ -503,6 +515,11 @@ void draw() {
       //メーター
       fill(0, 245, 255, 70);
       rect(0, rectY, width, rectD);
+      for (int i = 0; i <= stonen+1; i++) {
+        stones[i].display();
+      }
+      woods.display();
+      beaver.display(mouseX, mouseY);
       //時間
       s++;
     put();
