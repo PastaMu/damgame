@@ -7,7 +7,7 @@ int cnt;//落ちた水の数
 int n;//メーターで使ったよ
 int ls;//大きい水が出てくるタイム的な
 float wx, wy, sx, sy;
-int mn=40; //材料の個数
+int mn=35; //材料の個数
 int stonen;
 int woodn;
 int n1;
@@ -515,7 +515,7 @@ void draw() {
       //メーター
       fill(0, 245, 255, 70);
       rect(0, rectY, width, rectD);
-      for (int i = 0; i < mn; i++) {
+      for (int i = 0; i <= stonen+1; i++) {
         stones[i].display();
       }
       woods.display();
