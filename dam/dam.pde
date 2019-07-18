@@ -454,7 +454,11 @@ void meter(Water w, int a, int i) {
       }
     }
     if (a==2) {
-      w.y=u+40;
+      if(stonen==0) {
+        w.y=deadLine;
+      }else{
+        w.y=u+40;
+      }
     }
     cnt+=1;
   }
@@ -566,7 +570,7 @@ void put() {
       } else {
         stones[stonen].x=sx;
         stones[stonen].y=sy;
-        if (stonen==0||s/60>=20&&s/60<=23) {
+        if (stonen==0||s/60>=14&&s/60<=16) {
           r=stones[stonen].x+stones[stonen].sizeX/2;
           l=stones[stonen].x-stones[stonen].sizeX/2;
           if(on==0) {
@@ -585,7 +589,11 @@ void put() {
             }
           
             for (int i = 0; i < wn; i++) {
-              w3[i].y=u+40;
+              if(stonen==0) {
+                w3[i].y=deadLine;
+              }else{
+                w3[i].y=u+40;
+              }
             }
           }
            
