@@ -7,7 +7,7 @@ int cnt;//落ちた水の数
 int n;//メーターで使ったよ
 int ls;//大きい水が出てくるタイム的な
 float wx, wy, sx, sy;
-int mn=35; //材料の個数
+int mn=40; //材料の個数
 int stonen;
 int woodn;
 int n1;
